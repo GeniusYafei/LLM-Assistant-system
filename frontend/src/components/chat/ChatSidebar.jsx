@@ -237,7 +237,7 @@ export function ChatSidebar({
                             </div>
                             <h3 className="font-medium mb-1 text-gray-900 dark:text-gray-100">No conversations yet</h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Start your first conversation with Lorgan
+                                Start your first conversation with AI assistant
                             </p>
                         </div>
                     ) : (

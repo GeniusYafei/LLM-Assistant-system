@@ -1,0 +1,15 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="#000000"/>
+
+  <!-- J Shape -->
+  <path
+    d="M78 24 H96 V76
+       C96 100 78 112 56 112
+       C40 112 28 104 24 92
+       L38 86
+       C42 96 48 100 58 100
+       C70 100 78 94 78 76 Z"
+    fill="#22C55E"
+  />
+</svg>

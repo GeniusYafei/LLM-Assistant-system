@@ -61,8 +61,8 @@ export function DashboardPage({
                 className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 md:px-6 py-3 md:py-4">
                 <div className="flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink">
-                        <h1 className="font-semibold text-lg md:text-xl text-gray-900 dark:text-white truncate">Lorgan
-                            GPT</h1>
+                        <h1 className="font-semibold text-lg md:text-xl text-gray-900 dark:text-white truncate">JinKo
+                            Solar</h1>
                         <Badge
                             variant="secondary"
                             className="hidden sm:inline-flex bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-0 flex-shrink-0"
@@ -119,7 +119,7 @@ export function DashboardPage({
                                 <h3 className="text-3xl font-semibold mb-4 text-gray-900 dark:text-white">How can I help
                                     you today?</h3>
                                 <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
-                                    I'm Lorgan, your AI assistant. I can help you with questions, creative tasks,
+                                    I'm your AI assistant. I can help you with questions, creative tasks,
                                     analysis, coding, and much more.
                                     What would you like to explore?
                                 </p>
@@ -177,14 +177,13 @@ export function DashboardPage({
                     onUploadDocument={onUploadDocument}
                     disabled={createConversationLoading}
                     uploadDisabled={storageFull}
-                    placeholder={activeConversationId ? 'Message Lorgan...' : 'What are the best open opportunities by company size?'}
+                    placeholder={activeConversationId ? 'Message AI assistant...' : 'What are the best open opportunities by company size?'}
                 />
 
                 <div className="mt-3 md:mt-4 text-center hidden md:block">
                     <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                        Lorgan may display inaccurate info, so please double-check the responses.{' '}
-                        <button className="underline hover:text-gray-700 dark:hover:text-gray-300">Your Privacy & Lorgan
-                            GPT
+                        AI assistant may display inaccurate info, so please double-check the responses.{' '}
+                        <button className="underline hover:text-gray-700 dark:hover:text-gray-300">Your Privacy & Terms
                         </button>
                     </p>
                 </div>

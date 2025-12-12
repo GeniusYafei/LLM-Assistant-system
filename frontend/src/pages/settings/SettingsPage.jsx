@@ -903,7 +903,7 @@ function UserManagementTab({
                         <DialogDescription>
                             {confirmAction === 'deactivate'
                                 ? 'This user will not be able to sign in until reactivated.'
-                                : 'This user will regain access to Lorgan.'}
+                                : 'This user will regain access to Company.'}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2 py-2">
@@ -1107,7 +1107,7 @@ function PreferencesTab({
                     <div>
                         <Label htmlFor="theme" className="text-gray-900 dark:text-gray-100">Theme</Label>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Choose how Lorgan looks to you. Select a single theme, or sync with your system.
+                            Choose how JinkoSolar looks to you. Select a single theme, or sync with your system.
                         </p>
                         <Select value={theme} onValueChange={(value) => setTheme(value)}>
                             <SelectTrigger id="theme" className="mt-2 border-gray-200">
@@ -1356,7 +1356,7 @@ function LogoutSection() {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Sign Out</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Sign out of your Lorgan account on this device.
+                Sign out of your JinKoSolar account on this device.
             </p>
             <Button
                 variant="outline"

@@ -18,7 +18,7 @@ export function MessageInput({
                                  attachedDocuments = [],
                                  onUploadDocument,
                                  disabled = false,
-                                 placeholder = "Message Lorgan...",
+                                 placeholder = "Message AI assistant...",
                                  uploadDisabled = false,
                              }) {
     const [message, setMessage] = useState('');

@@ -4,6 +4,7 @@ import {Input} from '../ui/input';
 import {Label} from '../ui/label';
 import {Alert, AlertDescription} from '../ui/alert';
 import {Eye, EyeOff, Loader2, Lock, Mail, Shield} from 'lucide-react';
+import logo from '../../assets/logony.png';
 
 export function LoginForm({onLogin, onSwitchToSignup, onForgotPassword, loading = false, error}) {
     const [email, setEmail] = useState('');
@@ -37,12 +38,13 @@ export function LoginForm({onLogin, onSwitchToSignup, onForgotPassword, loading 
             {/* Header */}
             <div className="px-8 pt-8 pb-6 text-center">
                 {/* Lorgan Logo */}
-                <div className="w-32 h-12 mx-auto mb-6 bg-gray-900 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-lg tracking-wider">LORGAN</span>
-                </div>
+                {/* <div className="w-32 h-12 mx-auto mb-6 bg-gray-900 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg tracking-wider">JinKoSolar</span>
+                </div> */}
+                <img src={logo} alt="Lorgan Logo" className="w-32 h-12 mx-auto mb-6" />
 
                 <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-                    Welcome to Lorgan AI Assistant
+                    Welcome to LLM AI Assistant
                 </h1>
                 <p className="text-gray-600">Sign in to continue</p>
             </div>

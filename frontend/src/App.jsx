@@ -1277,16 +1277,16 @@ function AuthenticatedApp() {
             <div
                 className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
                 <div className="text-center space-y-6">
-                    {/* Lorgan Logo */}
+                    {/* JinkoSolar Logo */}
                     <div
                         className="w-32 h-12 mx-auto bg-gray-900 dark:bg-gray-100 rounded-lg flex items-center justify-center mb-8">
-                        <span className="text-white dark:text-gray-900 font-bold text-lg tracking-wider">LORGAN</span>
+                        <span className="text-white dark:text-gray-900 font-bold text-lg tracking-wider">JinkoSolar</span>
                     </div>
 
                     <div className="space-y-4">
                         <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-600 dark:text-gray-400"/>
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Lorgan AI
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">JinkoSolar AI
                                 Assistant</h3>
                             <p className="text-gray-600 dark:text-gray-400">Initializing your intelligent
                                 workspace...</p>
@@ -1520,16 +1520,16 @@ function AuthApp() {
             <div
                 className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
                 <div className="text-center space-y-6">
-                    {/* Lorgan Logo */}
+                    {/* JinkoSolar Logo */}
                     <div
                         className="w-32 h-12 mx-auto bg-gray-900 dark:bg-gray-100 rounded-lg flex items-center justify-center mb-8">
-                        <span className="text-white dark:text-gray-900 font-bold text-lg tracking-wider">LORGAN</span>
+                        <span className="text-white dark:text-gray-900 font-bold text-lg tracking-wider">JinkoSolar</span>
                     </div>
 
                     <div className="space-y-4">
                         <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-600 dark:text-gray-400"/>
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Lorgan AI
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">JinkoSolar AI
                                 Assistant</h3>
                             <p className="text-gray-600 dark:text-gray-400">Checking authentication...</p>
                         </div>

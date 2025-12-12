@@ -82,7 +82,7 @@ export function MessageList({
                         </Avatar>
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-lg font-medium">Welcome to Lorgan Assistant</h3>
+                        <h3 className="text-lg font-medium">Welcome to AI Assistant</h3>
                         <p className="text-muted-foreground">
                             Start a conversation by typing a message below. You can upload documents
                             to provide context for more accurate responses.
@@ -175,7 +175,7 @@ export function MessageList({
                                 <div className="flex-1 min-w-0 max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span
-                                            className="font-medium text-sm text-gray-900 dark:text-gray-100">Lorgan</span>
+                                            className="font-medium text-sm text-gray-900 dark:text-gray-100">AI assistant</span>
                                         <span className="text-xs text-gray-500 dark:text-gray-400">
                       {formatTimestamp(message.timestamp)}
                     </span>
@@ -280,7 +280,7 @@ export function MessageList({
 
                             <div className="flex-1 min-w-0 max-w-[85%] md:max-w-[80%]">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-medium text-sm text-gray-900 dark:text-gray-100">Lorgan</span>
+                                    <span className="font-medium text-sm text-gray-900 dark:text-gray-100">AI assistant</span>
                                     <span className="text-xs text-gray-500 dark:text-gray-400">now</span>
                                 </div>
 

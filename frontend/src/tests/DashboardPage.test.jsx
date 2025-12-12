@@ -55,9 +55,9 @@ const baseProps = {
 
 describe("DashboardPage Component", () => {
 
-  test("renders header title Lorgan GPT", () => {
+  test("renders header title JinkoSolar", () => {
     render(<DashboardPage {...baseProps} />);
-    expect(screen.getByText("Lorgan GPT")).toBeInTheDocument();
+    expect(screen.getByText("JinkoSolar")).toBeInTheDocument();
   });
 
   test("shows 'Select an Organization' when no org is selected", () => {
