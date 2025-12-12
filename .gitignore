@@ -1,0 +1,13 @@
+.idea/
+.vscode/
+.DS_Store
+pycache/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+uploads/
+backend/storage/
+.venv
+venv/
+.env/
