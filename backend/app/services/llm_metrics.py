@@ -9,10 +9,11 @@ async def fetch_success_rate_from_mock() -> float | None:
     Call llm-mock `retry_rate` endpoint to get success rate.
     Return (1 - retry_rate);
     """
-    base = str(settings.MOCK_LLM_BASE_URL).rstrip("/")
+    base = str(getattr(settings, "MOCK_LLM_BASE_URL", settings.OLLAMA_BASE_URL)).rstrip("/")
     url = f"{base}/retry_rate"
     try:
-        async with httpx.AsyncClient(timeout=settings.MOCK_LLM_TIMEOUT) as client:
+        timeout = getattr(settings, "MOCK_LLM_TIMEOUT", settings.OLLAMA_TIMEOUT)
+        async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.get(url)
             resp.raise_for_status()
             data = resp.json()
