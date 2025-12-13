@@ -802,7 +802,7 @@ function AuthenticatedApp() {
         }
     };
 
-    const handleSendMessage = async (message, attachedDocuments = []) => {
+    const handleSendMessage = async (message, attachedDocuments = [], modelSize = 'default') => {
         const trimmed = message?.trim();
         if (!trimmed) return;
 
@@ -852,7 +852,7 @@ function AuthenticatedApp() {
             })
         );
 
-        setLastPrompt({message: trimmed, attachedDocuments: documentList});
+        setLastPrompt({message: trimmed, attachedDocuments: documentList, modelSize});
         setIsGenerating(true);
         setCanRetry(false);
 
@@ -940,7 +940,7 @@ function AuthenticatedApp() {
         };
 
         try {
-            const payload = {content: trimmed};
+        const payload = {content: trimmed, model_size: modelSize || 'default'};
             if (documentList.length > 0) {
                 payload.document_ids = documentList;
             }
@@ -1132,7 +1132,7 @@ function AuthenticatedApp() {
 
     const handleRetryGeneration = () => {
         if (lastPrompt) {
-            handleSendMessage(lastPrompt.message, lastPrompt.attachedDocuments);
+            handleSendMessage(lastPrompt.message, lastPrompt.attachedDocuments, lastPrompt.modelSize || 'default');
         }
     };
 

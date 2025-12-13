@@ -27,10 +27,16 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: AnyHttpUrl | str = "http://localhost:11434"
     # Default model name served by Ollama
     OLLAMA_MODEL: str = "qwen3:4b"
+    # Optional model overrides for UI size presets
+    OLLAMA_MODEL_SMALL: str = "gemma3:1b"
+    OLLAMA_MODEL_MEDIUM: str = "gemma3:4b"
+    OLLAMA_MODEL_LARGE: str = "qwen3:4b"
     # HTTP timeout (seconds) for Ollama requests
     OLLAMA_TIMEOUT: float = 60.0
     # Optional: JSON string of Ollama options (temperature, top_p, seed, reasoning, etc.)
     OLLAMA_OPTIONS_JSON: str | None = None
+    # Base URL for the bundled mock LLM (used when "default" model is selected)
+    MOCK_LLM_BASE_URL: AnyHttpUrl | str = "http://mock-llm:5000"
 
     # ===== Filesystem storage =====
     # File storage root directory (directory in container)

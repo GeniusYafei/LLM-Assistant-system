@@ -20,7 +20,7 @@ from app.models.message import Message, MessageRole
 from app.models.session import Session
 from app.models.user import User
 from app.schemas.chat import ConversationCreate, ConversationOut, ConversationRename, MessageCreate, MessageOut
-from app.services.llm_client import get_client
+from app.services.llm_client import get_client_for
 from app.services.quotas import compute_text_bytes, can_accept_size, maybe_autorelease
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -219,6 +219,7 @@ async def send_message_no_stream(
 
     doc_ids = await _prepare_document_context(db, current_user.id, conv.id, payload.document_ids)
     user_meta = {"document_ids": doc_ids} if doc_ids else {}
+    user_meta["model_size"] = payload.model_size
 
     user_msg = Message(
         conversation_id=conv.id,
@@ -233,7 +234,7 @@ async def send_message_no_stream(
 
     # ===== Call mock llm (no stream), and get assistance response =====
     # Call Mock LLM: Pass the username and organization name
-    client = get_client()
+    client, resolved_model, resolved_size = get_client_for(payload.model_size)
     display_name = getattr(current_user, "display_name", None) or getattr(current_user, "email", None)
     # Organization name: organization_id (UUID).
     # If there is no organization name, pass None here. Mock is default_org by default.
@@ -253,7 +254,7 @@ async def send_message_no_stream(
                             detail="quota_exceeded_on_assistant_message")
 
     # Save assistant messages (store usage/latency in meta, for your dashboard use)
-    assistant_meta = {"usage": usage, "latency_ms": latency}
+    assistant_meta = {"usage": usage, "latency_ms": latency, "model": resolved_model, "model_size": resolved_size}
     if reasoning:
         assistant_meta["reasoning"] = reasoning
 
@@ -305,6 +306,7 @@ async def send_message_stream(
 
     doc_ids = await _prepare_document_context(db, current_user.id, conv.id, payload.document_ids)
     user_meta = {"document_ids": doc_ids} if doc_ids else {}
+    user_meta["model_size"] = payload.model_size
 
     user_msg = Message(
         conversation_id=conv.id,
@@ -317,7 +319,7 @@ async def send_message_stream(
     db.add(user_msg)
     await db.flush()
 
-    client = get_client()
+    client, resolved_model, resolved_size = get_client_for(payload.model_size)
     display_name = getattr(current_user, "display_name", None) or getattr(current_user, "email", None)
     organization_name = "default_org"
 
@@ -388,7 +390,7 @@ async def send_message_stream(
                 return
 
             # Quota enough → write assistant message
-            assistant_meta = {"usage": usage, "latency_ms": latency_ms}
+            assistant_meta = {"usage": usage, "latency_ms": latency_ms, "model": resolved_model, "model_size": resolved_size}
             if reasoning_text:
                 assistant_meta["reasoning"] = reasoning_text
 

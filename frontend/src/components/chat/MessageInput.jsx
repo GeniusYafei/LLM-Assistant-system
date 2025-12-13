@@ -47,7 +47,7 @@ export function MessageInput({
                 return;
             }
 
-            onSendMessage(message.trim(), Array.from(selectedDocuments));
+            onSendMessage(message.trim(), Array.from(selectedDocuments), selectedSource);
             setMessage('');
             setSelectedDocuments(new Set());
         }
@@ -193,10 +193,10 @@ export function MessageInput({
                                     <SelectValue placeholder="Source"/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="default">Default</SelectItem>
-                                    <SelectItem value="web">Large model</SelectItem>
-                                    <SelectItem value="docs">Medium model</SelectItem>
-                                    <SelectItem value="code">Small model</SelectItem>
+                                <SelectItem value="default">Default (Mock)</SelectItem>
+                                <SelectItem value="large">Large model (qwen3:4b)</SelectItem>
+                                <SelectItem value="medium">Medium model (gemma3:4b)</SelectItem>
+                                <SelectItem value="small">Small model (gemma3:1b)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

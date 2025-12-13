@@ -50,7 +50,7 @@ describe("MessageInput Component", () => {
     const sendBtn = screen.getAllByRole("button").at(-1);
     fireEvent.click(sendBtn);
 
-    expect(onSendMessage).toHaveBeenCalledWith("Hello AI", expect.any(Array));
+    expect(onSendMessage).toHaveBeenCalledWith("Hello AI", expect.any(Array), "default");
   });
 
   it("sends message with Ctrl+Enter", () => {
@@ -60,7 +60,7 @@ describe("MessageInput Component", () => {
 
     fireEvent.keyDown(textarea, { key: "Enter", ctrlKey: true });
 
-    expect(onSendMessage).toHaveBeenCalledWith("Quick send", expect.any(Array));
+    expect(onSendMessage).toHaveBeenCalledWith("Quick send", expect.any(Array), "default");
   });
 
   it("shows Stop button when isGenerating = true", () => {

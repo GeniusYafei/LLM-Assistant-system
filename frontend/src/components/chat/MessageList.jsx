@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from 'react';
 import {ScrollArea} from '../ui/scroll-area';
 import {Avatar, AvatarFallback} from '../ui/avatar';
 import {Badge} from '../ui/badge';
-import {AlertCircle, Check, Copy} from 'lucide-react';
+import {AlertCircle, Check, ChevronDown, ChevronUp, Copy} from 'lucide-react';
 import {Button} from '../ui/button';
 import {Skeleton} from '../ui/skeleton';
 
@@ -14,6 +14,8 @@ export function MessageList({
                             }) {
     const scrollAreaRef = useRef(null);
     const [copiedMessageId, setCopiedMessageId] = React.useState(null);
+    const [collapsedReasoning, setCollapsedReasoning] = React.useState(new Set());
+    const autoCollapsedRef = useRef(new Set());
 
     const getLatencyLabel = (metadata) => {
         if (!metadata) return null;
@@ -45,6 +47,30 @@ export function MessageList({
         }
     }, [messages, isGenerating]);
 
+    useEffect(() => {
+        setCollapsedReasoning(prev => {
+            const next = new Set(prev);
+            let changed = false;
+            messages.forEach(msg => {
+                if (!msg.reasoning) return;
+                if (msg.status === 'generating') {
+                    if (next.has(msg.id)) {
+                        next.delete(msg.id);
+                        changed = true;
+                    }
+                    autoCollapsedRef.current.delete(msg.id);
+                } else if (!next.has(msg.id)) {
+                    if (!autoCollapsedRef.current.has(msg.id)) {
+                        next.add(msg.id);
+                        autoCollapsedRef.current.add(msg.id);
+                        changed = true;
+                    }
+                }
+            });
+            return changed ? next : prev;
+        });
+    }, [messages]);
+
     const copyToClipboard = async (text, messageId) => {
         try {
             await navigator.clipboard.writeText(text);
@@ -66,6 +92,18 @@ export function MessageList({
         return documentIds
             .map(id => attachedDocuments.find(doc => doc.id === id)?.name)
             .filter(Boolean);
+    };
+
+    const toggleReasoningVisibility = (messageId) => {
+        setCollapsedReasoning(prev => {
+            const next = new Set(prev);
+            if (next.has(messageId)) {
+                next.delete(messageId);
+            } else {
+                next.add(messageId);
+            }
+            return next;
+        });
     };
 
     const hasActiveStreamingMessage = messages.some(
@@ -182,14 +220,42 @@ export function MessageList({
                                     </div>
 
                                     {message.reasoning && (
-                                        <div className="bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-xl p-3 mb-2">
-                                            <div className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Thinking</div>
-                                            <div
-                                                className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap"
-                                                style={{wordBreak: 'break-word', overflowWrap: 'anywhere'}}
-                                            >
-                                                {message.reasoning}
+                                        <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl p-3 mb-2">
+                                            <div className="flex items-center justify-between gap-2 mb-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Thinking</span>
+                                                    {message.status !== 'generating' && (
+                                                        <span className="text-[10px] text-gray-400 dark:text-gray-500">Tap to view</span>
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 px-2 text-xs text-gray-600 dark:text-gray-300"
+                                                    onClick={() => toggleReasoningVisibility(message.id)}
+                                                >
+                                                    {collapsedReasoning.has(message.id) ? (
+                                                        <span className="inline-flex items-center gap-1">Show<ChevronDown className="h-3 w-3"/></span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1">Hide<ChevronUp className="h-3 w-3"/></span>
+                                                    )}
+                                                </Button>
                                             </div>
+                                            {collapsedReasoning.has(message.id) ? (
+                                                <div
+                                                    className="text-xs text-gray-500 dark:text-gray-400 whitespace-pre-wrap"
+                                                    style={{wordBreak: 'break-word', overflowWrap: 'anywhere', maxHeight: '3.5rem', overflow: 'hidden'}}
+                                                >
+                                                    {message.reasoning}
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap"
+                                                    style={{wordBreak: 'break-word', overflowWrap: 'anywhere'}}
+                                                >
+                                                    {message.reasoning}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 

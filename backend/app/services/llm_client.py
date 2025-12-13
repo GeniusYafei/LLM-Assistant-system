@@ -178,8 +178,102 @@ class LLMClient:
             yield {"type": "error", "error": f"stream_error: {str(e)}"}
 
 
-# Module-level singleton: avoid re-initialization
-_client: LLMClient | None = None
+class MockLLMClient:
+    """Adapter for the bundled mock LLM service (Flask)."""
+
+    def __init__(self, base_url: str, timeout: float = 60.0):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+
+    @staticmethod
+    def _build_usage(data: Dict[str, Any]) -> Dict[str, Any]:
+        usage = data.get("usage")
+        if isinstance(usage, dict):
+            return {
+                "input_tokens": int(usage.get("input_tokens") or 0),
+                "output_tokens": int(usage.get("output_tokens") or 0),
+                "reasoning_tokens": int(usage.get("reasoning_tokens") or 0),
+                "total_tokens": int(usage.get("total_tokens") or 0),
+            }
+        return {"input_tokens": 0, "output_tokens": 0, "reasoning_tokens": 0, "total_tokens": 0}
+
+    async def assist_no_stream_reply(
+            self,
+            user_message: str,
+            user_name: str | None,
+            organization_name: str | None,
+    ) -> Tuple[str, Dict[str, Any], float | None, str]:
+        url = f"{self.base_url}/chat_no_stream"
+        payload = {
+            "question": user_message,
+            "user_name": user_name or "anonymous",
+            "organisation_name": organization_name or "default_org",
+        }
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            res = await client.post(url, json=payload)
+            res.raise_for_status()
+            data = res.json()
+            answer = str(data.get("llm_answer") or "")
+            usage = self._build_usage(data)
+            latency_ms = data.get("latency_ms")
+            reasoning = str(data.get("reasoning") or "") if data.get("reasoning") else ""
+            return answer, usage, float(latency_ms) if latency_ms is not None else None, reasoning
+
+    async def assist_stream_reply(
+            self,
+            user_message: str,
+            user_name: str | None,
+            organization_name: str | None,
+    ) -> AsyncGenerator[dict, None]:
+        url = f"{self.base_url}/chat"
+        payload = {
+            "question": user_message,
+            "user_name": user_name or "anonymous",
+            "organisation_name": organization_name or "default_org",
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=None) as client:
+                async with client.stream("POST", url, json=payload, timeout=self.timeout) as res:
+                    res.raise_for_status()
+                    async for raw_line in res.aiter_lines():
+                        if raw_line is None:
+                            await asyncio.sleep(0)
+                            continue
+                        line = (raw_line or "").strip()
+                        if not line:
+                            continue
+                        try:
+                            raw_event = json.loads(line)
+                        except Exception:
+                            continue
+
+                        message_type = raw_event.get("message_type")
+                        if message_type == "stream_delta":
+                            delta = raw_event.get("delta") or raw_event.get("llm_answer") or ""
+                            if delta:
+                                yield {"type": "delta", "delta": delta}
+                        elif message_type == "stream_end":
+                            usage = self._build_usage(raw_event)
+                            latency_ms = raw_event.get("latency_ms") or 0.0
+                            final_answer = raw_event.get("llm_answer") or ""
+                            yield {
+                                "type": "complete",
+                                "usage": usage,
+                                "latency_ms": float(latency_ms),
+                                "answer": final_answer,
+                            }
+                            return
+                        await asyncio.sleep(0)
+        except httpx.HTTPError as e:
+            yield {"type": "error", "error": f"http_error: {str(e)}"}
+        except Exception as e:
+            yield {"type": "error", "error": f"stream_error: {str(e)}"}
+
+
+# Module-level singleton cache: avoid re-initialization
+_clients: dict[str, LLMClient | MockLLMClient] = {}
 
 
 def _parse_ollama_options(raw: str | None) -> dict:
@@ -192,13 +286,41 @@ def _parse_ollama_options(raw: str | None) -> dict:
         return {}
 
 
-def get_client() -> LLMClient:
-    global _client
-    if _client is None:
-        _client = LLMClient(
+def _get_ollama_client(model: str) -> LLMClient:
+    key = f"ollama:{model}"
+    if key not in _clients:
+        _clients[key] = LLMClient(
             settings.OLLAMA_BASE_URL,
-            settings.OLLAMA_MODEL,
+            model,
             settings.OLLAMA_TIMEOUT,
             _parse_ollama_options(settings.OLLAMA_OPTIONS_JSON),
         )
-    return _client
+    return _clients[key]  # type: ignore[return-value]
+
+
+def _get_mock_client() -> MockLLMClient:
+    key = "mock"
+    if key not in _clients:
+        _clients[key] = MockLLMClient(settings.MOCK_LLM_BASE_URL, settings.OLLAMA_TIMEOUT)
+    return _clients[key]  # type: ignore[return-value]
+
+
+def get_client_for(model_size: str | None) -> tuple[LLMClient | MockLLMClient, str, str]:
+    """
+    Resolve the requested model preset to a concrete client and model label.
+
+    Returns (client, resolved_model_name, resolved_size)
+    """
+    normalized_size = (model_size or "default").lower()
+
+    if normalized_size == "default":
+        return _get_mock_client(), "mock_llm", "default"
+
+    model_map = {
+        "small": settings.OLLAMA_MODEL_SMALL or settings.OLLAMA_MODEL,
+        "medium": settings.OLLAMA_MODEL_MEDIUM or settings.OLLAMA_MODEL,
+        "large": settings.OLLAMA_MODEL_LARGE or settings.OLLAMA_MODEL,
+    }
+
+    resolved_model = model_map.get(normalized_size, settings.OLLAMA_MODEL)
+    return _get_ollama_client(resolved_model), resolved_model, normalized_size
