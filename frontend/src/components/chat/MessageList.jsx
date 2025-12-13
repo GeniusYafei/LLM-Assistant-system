@@ -224,9 +224,9 @@ export function MessageList({
                                             <div className="flex items-center justify-between gap-2 mb-1">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Thinking</span>
-                                                    {message.status !== 'generating' && (
+                                                    {/* {message.status !== 'generating' && (
                                                         <span className="text-[10px] text-gray-400 dark:text-gray-500">Tap to view</span>
-                                                    )}
+                                                    )} */}
                                                 </div>
                                                 <Button
                                                     variant="ghost"
