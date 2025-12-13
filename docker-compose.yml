@@ -25,6 +25,10 @@ services:
       - ./backend/.env
     environment:
       MOCK_LLM_BASE_URL: http://mock-llm:5000
+      # Route Ollama requests to the host machine where the daemon listens
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: qwen3:4b
+      OLLAMA_TIMEOUT: 60.0
     depends_on:
       - db
       - mock-llm
@@ -33,6 +37,8 @@ services:
     volumes:
       - ./backend:/app
       - ./uploads:/app/storage/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - lorgan-net
     command: >
