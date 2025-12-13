@@ -239,7 +239,7 @@ async def send_message_no_stream(
     # If there is no organization name, pass None here. Mock is default_org by default.
     organization_name = "default_org"
 
-    answer, usage, latency = await client.assist_no_stream_reply(
+    answer, usage, latency, reasoning = await client.assist_no_stream_reply(
         user_message=payload.content,
         user_name=display_name,
         organization_name=organization_name,
@@ -253,13 +253,17 @@ async def send_message_no_stream(
                             detail="quota_exceeded_on_assistant_message")
 
     # Save assistant messages (store usage/latency in meta, for your dashboard use)
+    assistant_meta = {"usage": usage, "latency_ms": latency}
+    if reasoning:
+        assistant_meta["reasoning"] = reasoning
+
     assistant_msg = Message(
         conversation_id=conv.id,
         session_id=conv.session_id,
         role=MessageRole.assistant.value,
         content_md=answer,
         size_bytes=assistant_bytes,
-        meta={"usage": usage, "latency_ms": latency}
+        meta=assistant_meta
     )
     db.add(assistant_msg)
     await db.commit()
@@ -319,6 +323,7 @@ async def send_message_stream(
 
     async def event_gen():
         assistant_text_chunks: list[str] = []
+        reasoning_text_chunks: list[str] = []
         received_delta = False
         usage: dict = {}
         latency_ms: float = 0.0
@@ -342,15 +347,26 @@ async def send_message_stream(
                         received_delta = True
                         yield f'data: {json.dumps({"type": "delta", "delta": delta})}\n\n'.encode("utf-8")
 
+                elif mtype == "thinking":
+                    reasoning_delta = ev.get("delta") or ev.get("reasoning") or ""
+                    if reasoning_delta:
+                        reasoning_text_chunks.append(reasoning_delta)
+                        yield f'data: {json.dumps({"type": "thinking", "delta": reasoning_delta})}\n\n'.encode("utf-8")
+
                 elif mtype == "complete":
                     usage = ev.get("usage") or {}
                     latency_ms = float(ev.get("latency_ms") or 0.0)
                     final_answer = ev.get("answer") or ev.get("delta") or ev.get("llm_answer") or ""
                     if final_answer and not received_delta:
                         assistant_text_chunks.append(final_answer)
+                    if ev.get("reasoning"):
+                        reasoning_text_chunks.append(ev.get("reasoning"))
+                    reasoning_text = "".join(reasoning_text_chunks)
                     complete_event = {"type": "complete", "usage": usage, "latency_ms": latency_ms}
                     if final_answer:
                         complete_event["answer"] = final_answer
+                    if reasoning_text:
+                        complete_event["reasoning"] = reasoning_text
                     yield f'data: {json.dumps(complete_event)}\n\n'.encode("utf-8")
                     break
 
@@ -363,6 +379,7 @@ async def send_message_stream(
 
             # Complete text splicing and quota check
             assistant_text = "".join(assistant_text_chunks)
+            reasoning_text = "".join(reasoning_text_chunks)
             assistant_bytes = compute_text_bytes(assistant_text)
 
             if not await _ensure_quota_for(db, current_user.id, assistant_bytes):
@@ -371,13 +388,17 @@ async def send_message_stream(
                 return
 
             # Quota enough → write assistant message
+            assistant_meta = {"usage": usage, "latency_ms": latency_ms}
+            if reasoning_text:
+                assistant_meta["reasoning"] = reasoning_text
+
             assistant_msg = Message(
                 conversation_id=conv.id,
                 session_id=conv.session_id,
                 role=MessageRole.assistant.value,
                 content_md=assistant_text,
                 size_bytes=assistant_bytes,
-                meta={"usage": usage, "latency_ms": latency_ms},
+                meta=assistant_meta,
             )
             db.add(assistant_msg)
             await db.commit()

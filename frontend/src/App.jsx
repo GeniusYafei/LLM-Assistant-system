@@ -161,6 +161,7 @@ function AuthenticatedApp() {
         const documentIds = Array.isArray(meta.document_ids)
             ? meta.document_ids
             : [];
+        const reasoning = typeof meta.reasoning === 'string' ? meta.reasoning : '';
 
         return {
             id: message.id,
@@ -170,6 +171,7 @@ function AuthenticatedApp() {
             status: 'completed',
             metadata: meta,
             attachedDocuments: documentIds,
+            reasoning,
         };
     };
 
@@ -835,6 +837,7 @@ function AuthenticatedApp() {
             status: 'generating',
             metadata: {},
             attachedDocuments: [],
+            reasoning: '',
         };
 
         setConversations(prev =>
@@ -911,6 +914,14 @@ function AuthenticatedApp() {
         const appendAssistantContent = (delta) => {
             if (!delta) return;
             enqueueCharacters(delta);
+        };
+
+        const appendAssistantReasoning = (delta) => {
+            if (!delta) return;
+            updateAssistantMessage(prev => ({
+                ...prev,
+                reasoning: `${prev.reasoning || ''}${delta}`,
+            }));
         };
 
         const drainCharacterQueue = () => {
@@ -996,9 +1007,17 @@ function AuthenticatedApp() {
                             if (event.type === 'delta') {
                                 hasReceivedDelta = true;
                                 appendAssistantContent(event.delta || '');
+                            } else if (event.type === 'thinking') {
+                                appendAssistantReasoning(event.delta || event.reasoning || '');
                             } else if (event.type === 'complete') {
                                 if (!hasReceivedDelta && typeof event.answer === 'string' && event.answer) {
                                     appendAssistantContent(event.answer);
+                                }
+                                if (typeof event.reasoning === 'string' && event.reasoning) {
+                                    updateAssistantMessage(prev => ({
+                                        ...prev,
+                                        reasoning: event.reasoning,
+                                    }));
                                 }
                                 updateAssistantMessage(prev => ({
                                     ...prev,

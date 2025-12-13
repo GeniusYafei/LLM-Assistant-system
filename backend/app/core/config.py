@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "qwen3:4b"
     # HTTP timeout (seconds) for Ollama requests
     OLLAMA_TIMEOUT: float = 60.0
+    # Optional: JSON string of Ollama options (temperature, top_p, seed, reasoning, etc.)
+    OLLAMA_OPTIONS_JSON: str | None = None
 
     # ===== Filesystem storage =====
     # File storage root directory (directory in container)

@@ -181,6 +181,18 @@ export function MessageList({
                     </span>
                                     </div>
 
+                                    {message.reasoning && (
+                                        <div className="bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-xl p-3 mb-2">
+                                            <div className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Thinking</div>
+                                            <div
+                                                className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap"
+                                                style={{wordBreak: 'break-word', overflowWrap: 'anywhere'}}
+                                            >
+                                                {message.reasoning}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Assistant Message Bubble */}
                                     <div
                                         className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-tl-md px-3 md:px-4 py-2 md:py-3 shadow-sm">
