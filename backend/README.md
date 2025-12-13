@@ -88,12 +88,25 @@ The chat endpoints now call an Ollama server instead of the mock LLM. You can co
 - `OLLAMA_BASE_URL` (default: `http://localhost:11434`)
 - `OLLAMA_MODEL` (default: `qwen3:4b`)
 - `OLLAMA_TIMEOUT` (default: `60.0` seconds)
+- `OLLAMA_OPTIONS_JSON` (optional JSON string passed to Ollama `options`, e.g. `{ "temperature": 0.6, "top_p": 0.9, "seed": 42, "reasoning": true }`)
 
 Example `.env` snippet:
 
 ```bash
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen3:4b
+OLLAMA_OPTIONS_JSON={"reasoning":true,"temperature":0.6}
 ```
 
-Make sure your Ollama daemon is running and the model has been pulled (`ollama pull qwen3:4b`).
+Make sure your Ollama daemon is running and the model has been pulled (`ollama pull qwen3:4b`). If you are using reasoning-capable models (e.g., qwen3:4b), enabling `reasoning` in `OLLAMA_OPTIONS_JSON` allows the backend to surface the model's thinking stream to clients.
+
+### Model size presets
+
+The dashboard exposes `default`, `small`, `medium`, and `large` model presets. They resolve to the following backends by default:
+
+- `default`: uses the bundled mock LLM (`MOCK_LLM_BASE_URL`, default `http://mock-llm:5000`)
+- `small`: `OLLAMA_MODEL_SMALL` (default `gemma3:1b`)
+- `medium`: `OLLAMA_MODEL_MEDIUM` (default `gemma3:4b`)
+- `large`: `OLLAMA_MODEL_LARGE` (default `qwen3:4b`)
+
+Adjust the corresponding environment variables if you want to point the presets to different Ollama models.

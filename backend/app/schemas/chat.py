@@ -4,6 +4,8 @@ from typing import Optional, List
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_serializer
 
 SYDNEY_TZ = ZoneInfo("Australia/Sydney")
@@ -41,6 +43,7 @@ class ConversationRename(BaseModel):
 class MessageCreate(BaseModel):
     content: str = Field(min_length=1, max_length=18000)
     document_ids: List[UUID] = Field(default_factory=list)
+    model_size: Literal["default", "small", "medium", "large"] = "default"
 
 
 class MessageOut(BaseModel):
