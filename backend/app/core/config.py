@@ -22,9 +22,13 @@ class Settings(BaseSettings):
         description="SQLAlchemy async URL",
     )
 
-    # ===== Mock LLM Service =====
-    MOCK_LLM_BASE_URL: AnyHttpUrl | str = "http://mock-llm:5000"
-    MOCK_LLM_TIMEOUT: float = 10.0
+    # ===== LLM Service (Ollama) =====
+    # Ollama API base URL (e.g., http://localhost:11434)
+    OLLAMA_BASE_URL: AnyHttpUrl | str = "http://localhost:11434"
+    # Default model name served by Ollama
+    OLLAMA_MODEL: str = "qwen3:4b"
+    # HTTP timeout (seconds) for Ollama requests
+    OLLAMA_TIMEOUT: float = 60.0
 
     # ===== Filesystem storage =====
     # File storage root directory (directory in container)

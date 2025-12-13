@@ -80,3 +80,20 @@ If your stack is already running via Docker Compose, you can run tests inside th
     ```
 
 That’s it — if the backend is up and env vars are correct, you’re good to go.
+
+## Configuring Ollama
+
+The chat endpoints now call an Ollama server instead of the mock LLM. You can configure the connection with environment variables:
+
+- `OLLAMA_BASE_URL` (default: `http://localhost:11434`)
+- `OLLAMA_MODEL` (default: `qwen3:4b`)
+- `OLLAMA_TIMEOUT` (default: `60.0` seconds)
+
+Example `.env` snippet:
+
+```bash
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen3:4b
+```
+
+Make sure your Ollama daemon is running and the model has been pulled (`ollama pull qwen3:4b`).
