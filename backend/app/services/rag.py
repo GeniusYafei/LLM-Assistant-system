@@ -31,8 +31,23 @@ class RetrievedContext:
 def _tokenize(text: str) -> list[str]:
     """Crude tokenizer that keeps CJK characters and words longer than 1."""
 
-    tokens = re.findall(r"[\w\u4e00-\u9fff]+", text.lower())
-    return [tok for tok in tokens if len(tok.strip()) > 1]
+    raw_tokens = re.findall(r"[\w\u4e00-\u9fff]+", text.lower())
+    tokens: list[str] = []
+
+    for tok in raw_tokens:
+        if not tok:
+            continue
+        # For CJK-heavy tokens, also split into single characters so that
+        # short Chinese questions still overlap with the reference lines.
+        if re.search(r"[\u4e00-\u9fff]", tok):
+            tokens.extend([ch for ch in tok if ch.strip()])
+            if len(tok.strip()) > 1:
+                tokens.append(tok)
+        elif len(tok.strip()) > 1:
+            tokens.append(tok)
+
+    return tokens
+
 
 
 def _chunk_lines(source: str, text: str) -> list[ContextChunk]:

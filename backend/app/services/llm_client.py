@@ -30,8 +30,10 @@ class LLMClient:
             context: str | None = None,
     ) -> Dict[str, Any]:
         system_msg = (
-            f"You are assisting {user_name or 'anonymous'} from {organization_name or 'default_org'}. "
-            "Respond helpfully and concisely."
+            "你是一名晶科能源中文助理，优先使用提供的检索上下文回答。"
+            "请始终使用简体中文回复，并以简洁要点或短段落总结。"
+            "如果上下文与问题无关或信息不足，直接说明这一点，而不是要求用户再次提供文档。"
+            f"当前用户：{user_name or 'anonymous'}，组织：{organization_name or 'default_org'}。"
         )
         messages: list[dict[str, Any]] = [
             {"role": "system", "content": system_msg},
@@ -41,8 +43,8 @@ class LLMClient:
             messages.append({
                 "role": "system",
                 "content": (
-                    "You have access to local ESG reference notes. Use them for answers; "
-                    "if the context is unrelated, say you have no relevant ESG details.\n"
+                     "以下是可以直接引用的 ESG 参考片段，请基于它们作答；"
+                     "如果其中没有相关信息，请简要说明。\n"
                     f"Context:\n{context}"
                 ),
             })
