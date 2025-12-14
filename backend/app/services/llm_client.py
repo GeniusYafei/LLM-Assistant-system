@@ -20,18 +20,39 @@ class LLMClient:
         self.options = options or {}
 
     # === Helper Methods ===
-    def _build_payload(self, user_message: str, user_name: Optional[str], organization_name: Optional[str], *, stream: bool) -> Dict[str, Any]:
+    def _build_payload(
+            self,
+            user_message: str,
+            user_name: Optional[str],
+            organization_name: Optional[str],
+            *,
+            stream: bool,
+            context: str | None = None,
+    ) -> Dict[str, Any]:
         system_msg = (
             f"You are assisting {user_name or 'anonymous'} from {organization_name or 'default_org'}. "
             "Respond helpfully and concisely."
         )
+        messages: list[dict[str, Any]] = [
+            {"role": "system", "content": system_msg},
+        ]
+
+        if context:
+            messages.append({
+                "role": "system",
+                "content": (
+                    "You have access to local ESG reference notes. Use them for answers; "
+                    "if the context is unrelated, say you have no relevant ESG details.\n"
+                    f"Context:\n{context}"
+                ),
+            })
+
+        messages.append({"role": "user", "content": user_message})
+
         payload = {
             "model": self.model,
             "stream": stream,
-            "messages": [
-                {"role": "system", "content": system_msg},
-                {"role": "user", "content": user_message},
-            ],
+            "messages": messages,
         }
 
         if self.options:
@@ -93,13 +114,15 @@ class LLMClient:
             user_message: str,
             user_name: str | None,
             organization_name: str | None,
+            *,
+            context: str | None = None,
     ) -> Tuple[str, Dict[str, Any], float | None, str]:
         """
         Call Ollama /api/chat with stream disabled.
         return (llm_answer, usage_dict, latency_ms, reasoning)
         """
         url = f"{self.base_url}/api/chat"
-        payload = self._build_payload(user_message, user_name, organization_name, stream=False)
+        payload = self._build_payload(user_message, user_name, organization_name, stream=False, context=context)
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             res = await client.post(url, json=payload)
@@ -117,13 +140,15 @@ class LLMClient:
             user_message: str,
             user_name: str | None,
             organization_name: str | None,
+            *,
+            context: str | None = None,
     ) -> AsyncGenerator[dict, None]:
         """
         Connect to Ollama /api/chat with streaming enabled and normalize events
         to delta/complete/error for the chat router.
         """
         url = f"{self.base_url}/api/chat"
-        payload = self._build_payload(user_message, user_name, organization_name, stream=True)
+        payload = self._build_payload(user_message, user_name, organization_name, stream=True, context=context)
 
         try:
             async with httpx.AsyncClient(timeout=None) as client:

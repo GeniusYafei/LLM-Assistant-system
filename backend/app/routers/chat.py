@@ -21,6 +21,7 @@ from app.models.session import Session
 from app.models.user import User
 from app.schemas.chat import ConversationCreate, ConversationOut, ConversationRename, MessageCreate, MessageOut
 from app.services.llm_client import get_client_for
+from app.services.rag import build_context_for_query
 from app.services.quotas import compute_text_bytes, can_accept_size, maybe_autorelease
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -232,6 +233,10 @@ async def send_message_no_stream(
     db.add(user_msg)
     await db.flush()
 
+    rag_context = build_context_for_query(payload.content)
+    context_text = rag_context.text if rag_context else None
+    context_sources = rag_context.sources if rag_context else []
+
     # ===== Call mock llm (no stream), and get assistance response =====
     # Call Mock LLM: Pass the username and organization name
     client, resolved_model, resolved_size = get_client_for(payload.model_size)
@@ -244,6 +249,7 @@ async def send_message_no_stream(
         user_message=payload.content,
         user_name=display_name,
         organization_name=organization_name,
+        context=context_text,
     )
 
     # ===== Check quota predict before writing =====
@@ -254,7 +260,14 @@ async def send_message_no_stream(
                             detail="quota_exceeded_on_assistant_message")
 
     # Save assistant messages (store usage/latency in meta, for your dashboard use)
-    assistant_meta = {"usage": usage, "latency_ms": latency, "model": resolved_model, "model_size": resolved_size}
+    assistant_meta = {
+        "usage": usage,
+        "latency_ms": latency,
+        "model": resolved_model,
+        "model_size": resolved_size,
+    }
+    if context_sources:
+        assistant_meta["rag_sources"] = context_sources
     if reasoning:
         assistant_meta["reasoning"] = reasoning
 
@@ -319,6 +332,10 @@ async def send_message_stream(
     db.add(user_msg)
     await db.flush()
 
+    rag_context = build_context_for_query(payload.content)
+    context_text = rag_context.text if rag_context else None
+    context_sources = rag_context.sources if rag_context else []
+
     client, resolved_model, resolved_size = get_client_for(payload.model_size)
     display_name = getattr(current_user, "display_name", None) or getattr(current_user, "email", None)
     organization_name = "default_org"
@@ -335,6 +352,7 @@ async def send_message_stream(
                     user_message=payload.content,
                     user_name=display_name,
                     organization_name=organization_name,
+                    context=context_text,
             ):
                 # Client disconnected actively
                 if await request.is_disconnected():
@@ -390,7 +408,14 @@ async def send_message_stream(
                 return
 
             # Quota enough → write assistant message
-            assistant_meta = {"usage": usage, "latency_ms": latency_ms, "model": resolved_model, "model_size": resolved_size}
+            assistant_meta = {
+                "usage": usage,
+                "latency_ms": latency_ms,
+                "model": resolved_model,
+                "model_size": resolved_size,
+            }
+            if context_sources:
+                assistant_meta["rag_sources"] = context_sources
             if reasoning_text:
                 assistant_meta["reasoning"] = reasoning_text
 
