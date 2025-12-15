@@ -84,7 +84,7 @@ def _similarity(query: str, chunk: ContextChunk) -> float:
     return (overlap * 0.7) + (ratio * 0.3)
 
 
-def _top_chunks(query: str, *, limit: int = 8, min_score: float = 0.12) -> list[ContextChunk]:
+def _top_chunks(query: str, *, limit: int = 16, min_score: float = 0.05) -> list[ContextChunk]:
     scored: list[tuple[float, ContextChunk]] = []
     for chunk in RAG_CORPUS:
         score = _similarity(query, chunk)
@@ -109,7 +109,9 @@ def build_context_for_query(query: str) -> RetrievedContext | None:
 
     best = _top_chunks(clean_query)
     if not best:
-        return None
+        fallback_lines = [f"[{chunk.source}] {chunk.content}" for chunk in RAG_CORPUS]
+        fallback_sources = _merge_sources(RAG_CORPUS)
+        return RetrievedContext(text="\n".join(fallback_lines), sources=fallback_sources)
 
     context_lines = [f"[{chunk.source}] {chunk.content}" for chunk in best]
     merged_sources = _merge_sources(best)
