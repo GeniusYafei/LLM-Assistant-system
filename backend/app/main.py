@@ -8,7 +8,12 @@ from fastapi.responses import HTMLResponse
 from app.core.config import settings
 from app.routers import account, admin, analytics, auth, chat, files, passwd_reset, quota
 
-app = FastAPI(title=settings.APP_NAME, docs_url=None)
+app = FastAPI(
+    title=settings.APP_NAME,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+)
 
 # CORS
 origins = [origin.strip() for origin in settings.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
@@ -131,6 +136,6 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/docs", include_in_schema=False)
-async def custom_docs() -> HTMLResponse:
-    return HTMLResponse(CUSTOM_DOCS_HTML.replace("__APP_NAME__", settings.APP_NAME))
+# @app.get("/docs", include_in_schema=False)
+# async def custom_docs() -> HTMLResponse:
+#     return HTMLResponse(CUSTOM_DOCS_HTML.replace("__APP_NAME__", settings.APP_NAME))
